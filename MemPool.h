@@ -1,5 +1,7 @@
 #include "MemPoolStrategy.h"
+#include "Buffer.h"
 
+//for smart pointer surporting
 class MemPoolPtr
 {
 public:
@@ -9,17 +11,22 @@ void operator delete()
 {
 	mp->Free(pointer);
 }
+explicit
+char* operator (char*)()
+{
+	return pointer;
+}
 
 private:
-char*	pointer;
-MemPool	* mp;
+	char*	pointer;
+	MemPool	* mp;
 };
 
 class MemPool
 {
 public:
 	//return 0 is ok , otherwise is error.
-	int	Init();
+	int	Init(uint64_t cap,MemStrategy * pstrategy = NULL);
 	//alloc sz size and return 
 	char*	Alloc(uint64_t sz);
 	//free a pointer 
@@ -29,6 +36,6 @@ public:
 	void		PrintStatistic();
 //buffer and manageing function
 private:
-	char*		buffer;
-	uint64_t	cap;
+	Buffer			buffer;
+	MemPoolStrategy*	strategy;
 };
