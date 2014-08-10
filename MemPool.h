@@ -11,8 +11,7 @@ void operator delete()
 {
 	mp->Free(pointer);
 }
-explicit
-char* operator (char*)()
+explicit operator char*()
 {
 	return pointer;
 }
