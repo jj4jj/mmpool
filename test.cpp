@@ -19,7 +19,7 @@ int main()
 
     int id =  mmpool_alloc(mp);
     void *p  =  mmpool_addr(mp,id);
-    printf("alloc:%p", p);
+    printf("alloc:%p\n", p);
     return 0;
 }
 
