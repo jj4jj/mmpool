@@ -168,7 +168,7 @@ int mmpool_fixed_bmp_begin(mmpool_strategy_fixed_bitmap_t * bmp)
     return mmpool_fixed_bmp_next(bmp, 0);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define get_block_list_entry(blocklist)  (&((mmpool_strategy_fixed_block_list_entry_t *)((char*)blocklist + sizeof(*blocklist))[0]))
+#define get_block_list_entry(blocklist)  ((mmpool_strategy_fixed_block_list_entry_t *)((char*)blocklist + sizeof(*blocklist)) )
 void mmpool_fixed_block_list_init(mmpool_strategy_fixed_block_list_t * blocklist, int block_size, size_t surplus_size )
 {
     size_t available_size = surplus_size - sizeof(mmpool_strategy_fixed_block_list_t);
@@ -206,7 +206,7 @@ int mmpool_fixed_block_list_alloc(mmpool_strategy_fixed_block_list_t * blocklist
 
     //erase from free
     int idx = blocklist->free_block_head;
-    int next = pstblocklist[idx]->next_idx;
+    int next = pstblocklist[idx].next_idx;
     if(next >= 0)
     {
         pstblocklist[next].prev_idx = pstblocklist[idx].prev_idx;
@@ -252,7 +252,7 @@ int mmpool_fixed_block_list_free(mmpool_strategy_fixed_block_list_t * blocklist,
 
     pstblocklist[idx].busy = 0;
     //erase from used
-    int next = pstblocklist[idx]->next_idx;
+    int next = pstblocklist[idx].next_idx;
     if(next >= 0)
     {
         pstblocklist[next].prev_idx = pstblocklist[idx].prev_idx;
@@ -474,7 +474,7 @@ int          mmpool_id(mmpool_t * pool ,void *  p)
         case E_MMPOOL_TYPE_FIXED_BMP:
             return mmpool_fixed_bmp_addr(&pool->fixed_bmp, p, pool->base.block_size);
         case E_MMPOOL_TYPE_FIXED_BLOCK_LIST:
-            return mmpool_fixed_bmp_addr(&pool->fixed_block_list, p);
+            return mmpool_fixed_block_list_id(&pool->fixed_block_list, p);
         default:
             return -1;
     }
