@@ -481,11 +481,11 @@ int          mmpool_id(mmpool_t * pool ,void *  p)
 }
 
 //traverse
-int          mmpool_free(mmpool_t * pool)
+int          mmpool_stat_free(mmpool_t * pool)
 {
     return pool->base.free_size;
 }
-int          mmpool_used(mmpool_t * pool)
+int          mmpool_stat_used(mmpool_t * pool)
 {
     return pool->base.used_size ;
 }

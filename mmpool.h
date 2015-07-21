@@ -23,8 +23,8 @@ void *       mmpool_addr(mmpool_t * pool ,int id);
 int          mmpool_id(mmpool_t * pool ,void *  p);
 
 //traverse
-int          mmpool_free(mmpool_t * pool);
-int          mmpool_used(mmpool_t * pool);
+int          mmpool_stat_free(mmpool_t * pool);
+int          mmpool_stat_used(mmpool_t * pool);
 int          mmpool_begin(mmpool_t * pool);
 int          mmpool_next(mmpool_t * pool, int id);
 

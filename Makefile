@@ -1,2 +1,2 @@
 test: mmpool.cpp test.cpp
-	gcc -g -o $@ $^
+	g++ -g -o $@ $^
