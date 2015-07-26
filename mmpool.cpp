@@ -42,9 +42,9 @@ typedef struct mmpool_base_t
     int    magic;
     int    type;
     int    block_size;
-    int    buffer_size;
-    int    free_size;
-    int    used_size;
+    size_t buffer_size;
+    size_t free_size;
+    size_t used_size;
 }
 mmpool_base_t ;
 
@@ -319,15 +319,9 @@ int mmpool_fixed_block_list_next(mmpool_strategy_fixed_block_list_t * blocklist,
 }
 
 
-
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void mmpool_init(int strategy_type, void * buffer, int sz, int block_size, int block_num)
+static void mmpool_init(int strategy_type, void * buffer,size_t sz, int block_size, int block_num)
 {
     mmpool_t * pool = (mmpool_t*)buffer;
     bzero(buffer,sz);
@@ -349,22 +343,21 @@ static void mmpool_init(int strategy_type, void * buffer, int sz, int block_size
             pool->base.used_size += sizeof(pool->fixed_block_list);
             pool->base.free_size -= sizeof(pool->fixed_block_list);
         break;
-        case E_MMPOOL_TYPE_FLEX_BLOCK_LIST:
-        break;
-        case E_MMPOOL_TYPE_FLEX_BUDDY_SYSTEM:
+        default:
         break;
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
-mmpool_t *   mmpool_create(void * buffer, int sz,
+mmpool_t *   mmpool_create(void * buffer, size_t sz,
                         int strategy_type, int block_size, int block_num)
 {
     if(block_num <= 0)
     {
         return NULL;
-    }                        
-    int total_size_min = mmpool_calc_size( block_num,  block_size,  strategy_type);
+    }
+    size_t total_size_min = mmpool_calc_size( block_num,  block_size,  strategy_type);
     if(total_size_min > sz)
     {
         return NULL;
@@ -372,7 +365,7 @@ mmpool_t *   mmpool_create(void * buffer, int sz,
     mmpool_init(strategy_type,buffer,sz,block_size,block_num);
     return (mmpool_t*)buffer;
 }
-mmpool_t *   mmpool_attach(void * buffer, int sz)
+mmpool_t *   mmpool_attach(void * buffer, size_t sz)
 {
     mmpool_t * pool = (mmpool_t*)buffer;
     if(pool->base.magic != MMPOOL_MAGIC)
@@ -384,7 +377,7 @@ mmpool_t *   mmpool_attach(void * buffer, int sz)
         return NULL;
     }
     //todo check stratgy type
-    return pool;    
+    return pool;
 }
 size_t       mmpool_calc_size(int block_num, int block_size, int strategy_type )
 {
@@ -399,8 +392,8 @@ size_t       mmpool_calc_size(int block_num, int block_size, int strategy_type )
         total_size += (block_size + sizeof(mmpool_strategy_fixed_block_list_entry_t)) * block_num +
                         sizeof(mmpool_strategy_fixed_block_list_t);
     }
-    //align todo 
-    return total_size;    
+    //todo align with 8bytes
+    return total_size;
 }
 int          mmpool_destroy(mmpool_t * pool)
 {
@@ -409,17 +402,15 @@ int          mmpool_destroy(mmpool_t * pool)
 }
 
 
-int          mmpool_alloc(mmpool_t * pool ,int block_num)//>0
+int          mmpool_alloc(mmpool_t * pool )//>0
 {
-    int id ;
+    int id = 0;
     switch(pool->base.type)
     {
         case E_MMPOOL_TYPE_FIXED_BMP:
-            block_num = 1;
             id = mmpool_fixed_bmp_alloc(&pool->fixed_bmp);
             break;
         case E_MMPOOL_TYPE_FIXED_BLOCK_LIST:
-            block_num = 1;
             id = mmpool_fixed_block_list_alloc(&pool->fixed_block_list);
             break;
         default:
@@ -428,8 +419,8 @@ int          mmpool_alloc(mmpool_t * pool ,int block_num)//>0
     if(id > 0)
     {
         //alloc success
-        pool->base.free_size -= pool->base.block_size * block_num;
-        pool->base.used_size += pool->base.block_size * block_num;
+        pool->base.free_size -= pool->base.block_size ;
+        pool->base.used_size += pool->base.block_size ;
     }
     return id;
 }
@@ -481,11 +472,11 @@ int          mmpool_id(mmpool_t * pool ,void *  p)
 }
 
 //traverse
-int          mmpool_stat_free(mmpool_t * pool)
+size_t      mmpool_stat_free(mmpool_t * pool)
 {
     return pool->base.free_size;
 }
-int          mmpool_stat_used(mmpool_t * pool)
+size_t      mmpool_stat_used(mmpool_t * pool)
 {
     return pool->base.used_size ;
 }
